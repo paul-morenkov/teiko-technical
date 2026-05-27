@@ -12,7 +12,7 @@ import seaborn as sns
 from scipy import stats
 
 sns.set_theme()
-
+DB_PATH = "cell_counts.db"
 
 def prep_outputs_dir():
     """Create output directories and subdirectories if they don't yet exist."""
@@ -23,7 +23,7 @@ def prep_outputs_dir():
 
 
 def load_samples() -> pd.DataFrame:
-    with sqlite3.connect("cell_counts.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         query = "SELECT * FROM samples"
         samples = pd.read_sql_query(query, conn)
     return samples
@@ -51,7 +51,7 @@ def create_cell_type_frequency_table() -> pd.DataFrame:
 
 def load_miraclib_samples() -> pd.DataFrame:
     """Returns `sample` and `response` columns for subjects with melanoma that underwent miraclib treatment. Only considers PBMC samples."""
-    with sqlite3.connect("cell_counts.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         query = """SELECT samples.sample, subjects.response 
         FROM subjects 
         INNER JOIN samples
@@ -126,7 +126,7 @@ def analyze_subsets():
         AND sample_type = "PBMC"
         AND time_from_treatment_start = 0
     """
-    with sqlite3.connect("cell_counts.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         baseline = pd.read_sql_query(query, conn)
 
     print(f"There are {len(baseline)} baseline samples.")
@@ -156,7 +156,7 @@ def calculate_avg_b_cells():
         AND sex = "M"
     """
 
-    with sqlite3.connect("cell_counts.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         avg_b_cells = pd.read_sql_query(query, conn)
 
     assert len(avg_b_cells) == 1
