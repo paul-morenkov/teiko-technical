@@ -19,6 +19,8 @@ def load_samples() -> pd.DataFrame:
 
 
 def create_cell_type_frequency_table() -> pd.DataFrame:
+    print("### Part 2: Data Overview ###")
+    print("Results are in `outputs/part_2`\n")
     samples = load_samples()
 
     samples = samples[
@@ -32,7 +34,7 @@ def create_cell_type_frequency_table() -> pd.DataFrame:
     summary = pops[["total_count", "population", "count", "percentage"]].sort_values(
         ["sample", "population"]
     )
-    summary.to_csv("outputs/cell_type_frequency.csv")
+    summary.to_csv("outputs/part_2/cell_type_frequency.csv")
     return summary
 
 
@@ -54,6 +56,8 @@ def load_miraclib_samples() -> pd.DataFrame:
 
 
 def analyze_miraclib(pops: pd.DataFrame):
+    print("### Part 3: Analyzing Miraclib ###")
+    print("Results are in `outputs/part_3`\n")
     # Get sample and response information
     samples = load_miraclib_samples()
     # Join with relative frequencies
@@ -65,31 +69,71 @@ def analyze_miraclib(pops: pd.DataFrame):
     sns.boxplot(ax=ax, data=samples, x="population", y="percentage", hue="response")
     ax.set_ylabel("Relative Frequency (%)")
     fig.suptitle("Cell Type Frequency for Miralib Responders and Non-Responders")
-    fig.savefig("outputs/miraclib_effects.png")
+    fig.savefig("outputs/part_3/miraclib_effects.png")
 
     # Perform statistical analysis
-    pct_df = samples.pivot(index=["response", "sample"], columns="population", values="percentage")
+    pct_df = samples.pivot(
+        index=["response", "sample"], columns="population", values="percentage"
+    )
     by_response = pct_df.groupby(level="response")
-    
+
     a = by_response.get_group("yes")
     b = by_response.get_group("no")
-    
+
     result = stats.ttest_ind(a, b, axis=0)
-    
+
     ALPHA = 0.05
-    print("T-TEST RESULTS BY POPULATION")
+
+    stat_df = pd.DataFrame({
+        "cell_type": a.columns.to_list(),
+        "p_value": result.pvalue,
+    })
+    stat_df["significant"] = stat_df["p_value"] < ALPHA
+    stat_df.to_csv("outputs/part_3/t_test_results.csv", index=False)
+    print(stat_df)
+    print()
+
+    print("CELL TYPES WITH SIGNIFICANT CHANGE:\n")
     for cell_type, p in zip(a.columns, result.pvalue):
         if p < 0.05:
-            print(f"SIGNIFICANT change in {cell_type} frequency (p={p})")
-        else:
-            print(f"NO significant change for {cell_type} (p={p})")
-        
+            print(f"SIGNIFICANT change in {cell_type} frequency (p={p:.4f})")
 
+def analyze_subsets():
+
+    print("### Part 4: Analyzing Subsets ###")
+    print("Results are in `outputs/part_4`\n")
+
+    query = """SELECT *
+    FROM subjects
+    INNER JOIN samples
+        ON subjects.subject = samples.subject
+    WHERE condition = "melanoma" 
+        AND treatment = "miraclib"
+        AND sample_type = "PBMC"
+        AND time_from_treatment_start = 0
+    """
+    with sqlite3.connect("cell_counts.db") as conn:
+        baseline = pd.read_sql_query(query, conn)
+
+    print(f"There are {len(baseline)} baseline samples.")
+
+    # Remaining subqueries can be grouped/filtered from DataFrame; don't need to reaccess the DB
+
+    samples_per_proj = baseline.groupby("project").size()
+    samples_per_proj.to_csv("outputs/part_4/samples_per_project.csv")
+    print("Samples per project: ")
+    print(samples_per_proj)
+    print()
+
+    sex_and_response = pd.crosstab(baseline["response"], baseline["sex"], margins=True)
+    sex_and_response.to_csv("outputs/part_4/sex_and_response.csv")
+    print(sex_and_response)
 
 
 def main():
     pop_freqs = create_cell_type_frequency_table()
     analyze_miraclib(pop_freqs)
+    analyze_subsets()
 
 
 if __name__ == "__main__":

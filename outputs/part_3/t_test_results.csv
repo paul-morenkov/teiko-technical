@@ -1,0 +1,6 @@
+cell_type,p_value,significant
+b_cell,0.17146562063364373,False
+cd4_t_cell,0.005051767931634904,True
+cd8_t_cell,0.7678658024862458,False
+monocyte,0.46646793837663153,False
+nk_cell,0.19331848402435994,False
