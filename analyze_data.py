@@ -143,12 +143,36 @@ def analyze_subsets():
     sex_and_response.to_csv("outputs/part_4/sex_and_response.csv")
     print(sex_and_response)
 
+def calculate_avg_b_cells():
+    query = """SELECT AVG(b_cell) as avg_b_cells
+    FROM subjects
+    INNER JOIN samples
+        ON subjects.subject = samples.subject
+    WHERE condition = "melanoma" 
+        AND treatment = "miraclib"
+        AND response = "yes"
+        AND sample_type = "PBMC"
+        AND time_from_treatment_start = 0
+        AND sex = "M"
+    """
+
+    with sqlite3.connect("cell_counts.db") as conn:
+        avg_b_cells = pd.read_sql_query(query, conn)
+
+    assert len(avg_b_cells) == 1
+    avg_b_cells = avg_b_cells.loc[0, "avg_b_cells"]
+
+    print()
+    
+    print(f"Average B Cells for male melanoma miraclib responders (time=0, sample_type=PBMC): {avg_b_cells:.2f}")
+
 
 def main():
     prep_outputs_dir()
     pop_freqs = create_cell_type_frequency_table()
     analyze_miraclib(pop_freqs)
     analyze_subsets()
+    calculate_avg_b_cells()
 
 
 if __name__ == "__main__":
