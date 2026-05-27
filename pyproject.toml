@@ -8,6 +8,8 @@ dependencies = [
     "ipykernel>=7.2.0",
     "pandas>=3.0.3",
     "pandas-stubs>=3.0.0.260204",
+    "scipy>=1.17.1",
+    "scipy-stubs>=1.17.1.5",
     "seaborn>=0.13.2",
     "streamlit>=1.57.0",
 ]

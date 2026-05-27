@@ -6,6 +6,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from scipy import stats
+
 sns.set_theme()
 
 
@@ -56,12 +58,33 @@ def analyze_miraclib(pops: pd.DataFrame):
     samples = load_miraclib_samples()
     # Join with relative frequencies
     samples = samples.join(pops, on="sample")
+
+    # Create boxplot
     fig, ax = plt.subplots(1, 1, figsize=(10, 8), dpi=200)
 
     sns.boxplot(ax=ax, data=samples, x="population", y="percentage", hue="response")
     ax.set_ylabel("Relative Frequency (%)")
     fig.suptitle("Cell Type Frequency for Miralib Responders and Non-Responders")
     fig.savefig("outputs/miraclib_effects.png")
+
+    # Perform statistical analysis
+    pct_df = samples.pivot(index=["response", "sample"], columns="population", values="percentage")
+    by_response = pct_df.groupby(level="response")
+    
+    a = by_response.get_group("yes")
+    b = by_response.get_group("no")
+    
+    result = stats.ttest_ind(a, b, axis=0)
+    
+    ALPHA = 0.05
+    print("T-TEST RESULTS BY POPULATION")
+    for cell_type, p in zip(a.columns, result.pvalue):
+        if p < 0.05:
+            print(f"SIGNIFICANT change in {cell_type} frequency (p={p})")
+        else:
+            print(f"NO significant change for {cell_type} (p={p})")
+        
+
 
 
 def main():
