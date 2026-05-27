@@ -1,14 +1,25 @@
 import sqlite3
 import pandas as pd
+from pathlib import Path
+
 import matplotlib
 
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # Allow rendering for headless environments
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from scipy import stats
 
 sns.set_theme()
+
+
+def prep_outputs_dir():
+    """Create output directories and subdirectories if they don't yet exist."""
+    outputs = Path.cwd() / "outputs"
+    for i in (2, 3, 4):
+        subdir = outputs / f"part_{i}"
+        subdir.mkdir(parents=True, exist_ok=True)
 
 
 def load_samples() -> pd.DataFrame:
@@ -84,10 +95,12 @@ def analyze_miraclib(pops: pd.DataFrame):
 
     ALPHA = 0.05
 
-    stat_df = pd.DataFrame({
-        "cell_type": a.columns.to_list(),
-        "p_value": result.pvalue,
-    })
+    stat_df = pd.DataFrame(
+        {
+            "cell_type": a.columns.to_list(),
+            "p_value": result.pvalue,
+        }
+    )
     stat_df["significant"] = stat_df["p_value"] < ALPHA
     stat_df.to_csv("outputs/part_3/t_test_results.csv", index=False)
     print(stat_df)
@@ -97,6 +110,7 @@ def analyze_miraclib(pops: pd.DataFrame):
     for cell_type, p in zip(a.columns, result.pvalue):
         if p < 0.05:
             print(f"SIGNIFICANT change in {cell_type} frequency (p={p:.4f})")
+
 
 def analyze_subsets():
 
@@ -131,6 +145,7 @@ def analyze_subsets():
 
 
 def main():
+    prep_outputs_dir()
     pop_freqs = create_cell_type_frequency_table()
     analyze_miraclib(pop_freqs)
     analyze_subsets()
