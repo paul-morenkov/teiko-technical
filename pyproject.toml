@@ -1,7 +1,7 @@
 [project]
 name = "teiko-technical"
 version = "0.1.0"
-description = "Add your description here"
+description = "Teiko Technical Take-home"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

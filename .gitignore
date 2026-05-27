@@ -1,4 +1,7 @@
 .claude/
 .venv/
 outputs/
+*.egg-info
+.python-version
+*.db
 
