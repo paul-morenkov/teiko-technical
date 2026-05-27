@@ -1,5 +1,12 @@
 import sqlite3
 import pandas as pd
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_theme()
 
 
 def load_samples() -> pd.DataFrame:
@@ -9,7 +16,7 @@ def load_samples() -> pd.DataFrame:
     return samples
 
 
-def create_cell_type_frequency_table():
+def create_cell_type_frequency_table() -> pd.DataFrame:
     samples = load_samples()
 
     samples = samples[
@@ -24,10 +31,42 @@ def create_cell_type_frequency_table():
         ["sample", "population"]
     )
     summary.to_csv("outputs/cell_type_frequency.csv")
+    return summary
+
+
+def load_miraclib_samples() -> pd.DataFrame:
+    """Returns `sample` and `response` columns for subjects with melanoma that underwent miraclib treatment. Only considers PBMC samples."""
+    with sqlite3.connect("cell_counts.db") as conn:
+        query = """SELECT samples.sample, subjects.response 
+        FROM subjects 
+        INNER JOIN samples
+            ON samples.subject = subjects.subject 
+        WHERE condition = "melanoma"
+            AND treatment = "miraclib" 
+            AND sample_type = "PBMC"
+        """
+
+        samples = pd.read_sql_query(query, conn)
+
+    return samples
+
+
+def analyze_miraclib(pops: pd.DataFrame):
+    # Get sample and response information
+    samples = load_miraclib_samples()
+    # Join with relative frequencies
+    samples = samples.join(pops, on="sample")
+    fig, ax = plt.subplots(1, 1, figsize=(10, 8), dpi=200)
+
+    sns.boxplot(ax=ax, data=samples, x="population", y="percentage", hue="response")
+    ax.set_ylabel("Relative Frequency (%)")
+    fig.suptitle("Cell Type Frequency for Miralib Responders and Non-Responders")
+    fig.savefig("outputs/miraclib_effects.png")
 
 
 def main():
-    create_cell_type_frequency_table()
+    pop_freqs = create_cell_type_frequency_table()
+    analyze_miraclib(pop_freqs)
 
 
 if __name__ == "__main__":
