@@ -52,6 +52,11 @@ One row per sample. Stores time-varying and sample-level measurements, with a fo
 | `nk_cell` | INTEGER | NK cell count |
 | `monocyte` | INTEGER | Monocyte count |
 
+### Rationale
+
+The schema was created with `sqlite3`, without relying on a more sophisticated ORM such as `SQLAlchemy`, because the data structure is fairly simple, and `SQLAlchemy` would cause unnecessary overhead. `subjects` was decoupled from `samples` to normalize the schema and reduce repetition of information. `subjects` captures all information that is specific to the subject and that would be repeated across multiple samples for the same subject. All the columns from `cell-count.csv` were kept, in case future analysis requires it. As more information is added, these tables can be extended. Additionally, a `projects` table could be created to store project structure information as the number of projects/subjects grows. This schema should scale fairly well with the number of projects/samples/treatments/conditions. Since each cell population type is a separate column, it is easy to add additional fields as the test panel capabilities improve. Joins from `subjects` (or `projects` in the future) can easily filter `samples` down to manageable row numbers for any particular analysis. With 100s of projects and 1,000s of samples there will be ~millions of rows, which will still be incredibly performant for any subsetting operations. However, as the database size scales it would make sense to switch from sqlite3 to a dedicated server-based SQL provider.
+Any additional information (e.g. relative frequency) can be inexpensively computed from the 5 cell populations, so there is no point in storing that as additional fields in the database. Most fields allow null values to minimize assumptions about experimental data.
+
 ## Code Structure
 
 The project is organized as three independent scripts, each responsible for a distinct stage of the pipeline:
