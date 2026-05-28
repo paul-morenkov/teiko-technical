@@ -16,7 +16,7 @@ make pipeline  # load data into SQLite and run analysis
 make dashboard # start the Streamlit dashboard at http://localhost:8501
 ```
 
-Each target must be run from the project root directory.
+Each target must be run from the project root directory. All tables/figures are created in a new `outputs/` directory in the project root. Previous results from my local testing are available in `outputs.bak/`, in case anything fails.
 
 ## Database Schema
 
