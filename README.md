@@ -18,6 +18,12 @@ make dashboard # start the Streamlit dashboard at http://localhost:8501
 
 Each target must be run from the project root directory. All tables/figures are created in a new `outputs/` directory in the project root. Previous results from my local testing are available in `outputs.bak/`, in case anything fails.
 
+**NOTE:** The dashboard may ask for an email input the first time it's run, pressing Enter will load the dashboard.
+
+**NOTE:** The first instance of running the `make pipeline` will likely take longer, because libraries like numpy and matplotlib will be compiled the first time. Further runs will be much faster.
+
+**NOTE:** For the B Cell question, I assumed this referred to male responders at time=0 **for miraclib PBMC samples**, based on the previous steps. This was a little ambiguous, so the number could be different for all sample types or all responders (to not just miraclib).k
+
 ## Database Schema
 
 The pipeline loads `cell-count.csv` into a SQLite database (`cell_counts.db`) with two tables.
