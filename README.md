@@ -68,7 +68,7 @@ Any additional information (e.g. relative frequency) can be inexpensively comput
 The project is organized as three independent scripts, each responsible for a distinct stage of the pipeline:
 
 - **`load_data.py`** - reads `cell-count.csv` and writes the normalized SQLite database. Run this first.
-- **`analyze_data.py`** - queries the database, performs statistical analysis, and writes outputs to the `outputs/` directory.
+- **`analyze_data.py`** - queries the database, performs statistical analysis, and writes outputs to the `outputs/` directory. Table outputs are in `.csv` format for scalability and easier integration into further analysis. Figures are saved as image files. 
 - **`dashboard.py`** - a Streamlit app that queries the database directly and presents interactive visualizations of the analysis results.
 
 These are kept as separate files because they are independent processes: the database only needs to be loaded once, analysis can be re-run without reloading, and the dashboard can be developed and iterated on independently. As the project scales, `analyze_data.py` and `dashboard.py` could each be split into multiple files (e.g. one module per analysis section) without changing the overall pipeline structure.
